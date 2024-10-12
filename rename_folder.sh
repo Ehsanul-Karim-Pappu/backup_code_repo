@@ -1,13 +1,18 @@
 #!/bin/bash
 
-# ANSI color codes
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
+# ANSI color codes for text
+WHITE='\033[97m'
+BLACK='\033[30m'
 NC='\033[0m' # No Color
 
-# Function to show colored diff
+# Background colors
+BG_LIGHTRED='\033[41m'
+BG_LIGHTGREEN='\033[42m'
+BG_LIGHTYELLOW='\033[43m'
+BG_LIGHTBLUE='\033[44m'
+BG_LIGHTGRAY='\033[47m'
+
+# Function to show colored diff with background color
 show_diff() {
     local old_name="$1"
     local new_name="$2"
@@ -19,33 +24,33 @@ show_diff() {
     while [ $i -lt ${#old_name} ] || [ $j -lt ${#new_name} ]; do
         if [ $i -ge ${#old_name} ]; then
             # Remaining characters in new_name are additions
-            new_output+="${GREEN}${new_name:$j}${NC}"
+            new_output+="${BG_LIGHTGREEN}${BLACK}${new_name:$j}${NC}"
             break
         elif [ $j -ge ${#new_name} ]; then
             # Remaining characters in old_name are deletions
-            old_output+="${RED}${old_name:$i}${NC}"
+            old_output+="${BG_LIGHTRED}${WHITE}${old_name:$i}${NC}"
             break
         elif [ "${old_name:$i:1}" = "${new_name:$j:1}" ]; then
             # Characters are the same
-            old_output+="${old_name:$i:1}"
-            new_output+="${new_name:$j:1}"
+            old_output+="${BG_LIGHTBLUE}${BLACK}${old_name:$i:1}${NC}"
+            new_output+="${BG_LIGHTGRAY}${BLACK}${new_name:$j:1}${NC}"
             i=$((i+1))
             j=$((j+1))
         else
             # Characters differ
             if [[ "${old_name:$i:1}" =~ [^[:alnum:]] && "${new_name:$j:1}" = "_" ]]; then
                 # Non-alphanumeric replaced with underscore
-                old_output+="${YELLOW}${old_name:$i:1}${NC}"
-                new_output+="${GREEN}_${NC}"
+                old_output+="${BG_LIGHTYELLOW}${BLACK}${old_name:$i:1}${NC}"
+                new_output+="${BG_LIGHTGREEN}${BLACK}_${NC}"
                 i=$((i+1))
                 j=$((j+1))
             elif [[ "${old_name:$i:1}" =~ [^[:alnum:]] ]]; then
                 # Non-alphanumeric character removed
-                old_output+="${RED}${old_name:$i:1}${NC}"
+                old_output+="${BG_LIGHTRED}${WHITE}${old_name:$i:1}${NC}"
                 i=$((i+1))
             else
                 # New character added
-                new_output+="${GREEN}${new_name:$j:1}${NC}"
+                new_output+="${BG_LIGHTGREEN}${BLACK}${new_name:$j:1}${NC}"
                 j=$((j+1))
             fi
         fi
