@@ -37,10 +37,10 @@ rename_item() {
     
     if [ "$old_name" != "$new_name" ]; then
         if [ "$DRY_RUN" = true ]; then
-            echo "Would rename: $old_name -> $new_name"
+            echo "Would rename: $(basename "$old_name") -> $(basename "$new_name")"
         else
             mv -n "$old_name" "$new_name"
-            echo "Renamed: $old_name -> $new_name"
+            echo "Renamed: $(basename "$old_name") -> $(basename "$new_name")"
         fi
     fi
 }
