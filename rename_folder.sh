@@ -11,8 +11,29 @@ rename_item() {
         return
     fi
 
-    local new_base_name=$(echo "$base_name" | sed -e 's/[^[:alnum:].-]/_/g' -e 's/__*/_/g' -e 's/^_//g' -e 's/_$//g')
-    local new_name="$dir_path/$new_base_name"
+    # Check if it's a directory
+    if [ -d "$old_name" ]; then
+        # For directories, replace all non-alphanumeric characters with underscores
+        local new_name_part=$(echo "$base_name" | sed -e 's/[^[:alnum:]]/_/g' -e 's/__*/_/g' -e 's/^_//g' -e 's/_$//g')
+        local new_name="$dir_path/$new_name_part"
+    else
+        # For files, split the base name into name and extension
+        local name_part="${base_name%.*}"
+        local extension="${base_name##*.}"
+
+        # If there's no extension, set extension to empty
+        if [ "$name_part" = "$extension" ]; then
+            extension=""
+        else
+            extension=".$extension"
+        fi
+
+        # Process the name part
+        local new_name_part=$(echo "$name_part" | sed -e 's/[^[:alnum:]]/_/g' -e 's/__*/_/g' -e 's/^_//g' -e 's/_$//g')
+
+        # Combine the processed name part with the extension
+        local new_name="$dir_path/${new_name_part}${extension}"
+    fi
     
     if [ "$old_name" != "$new_name" ]; then
         if [ "$DRY_RUN" = true ]; then
@@ -29,14 +50,14 @@ rename_recursive() {
     local dir="$1"
     
     # Use find with -P to avoid following symlinks
-    # Rename files first
-    find -P "$dir" -depth -type f ! -name ".*" | while read -r file; do
-        rename_item "$file"
-    done
-    
-    # Then rename directories
+    # Rename directories first (in reverse depth order)
     find -P "$dir" -depth -type d ! -name ".*" | while read -r directory; do
         rename_item "$directory"
+    done
+    
+    # Then rename files
+    find -P "$dir" -type f ! -name ".*" | while read -r file; do
+        rename_item "$file"
     done
 }
 
